@@ -1,0 +1,44 @@
+name: ClinicDesk quality
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: clinicdesk_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, dom
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+      - run: php artisan test --compact
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USERNAME: root
+          DB_PASSWORD: ''
+      - run: php vendor/bin/pint --test
+      - run: composer audit
+      - run: npm ci
+      - run: npm audit
+      - run: npm run check:api
+      - run: npm run build

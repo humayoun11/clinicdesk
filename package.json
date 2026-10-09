@@ -1,0 +1,20 @@
+{
+    "name": "clinicdesk",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "check:api": "node scripts/validate-api.mjs",
+        "test:browser": "node scripts/browser-smoke.mjs"
+    },
+    "dependencies": {
+        "bootstrap": "^5.3.8"
+    },
+    "devDependencies": {
+        "@apidevtools/swagger-parser": "^13.0.0",
+        "@playwright/test": "^1.64.0",
+        "laravel-vite-plugin": "^1.2.0",
+        "vite": "^6.0.11"
+    }
+}

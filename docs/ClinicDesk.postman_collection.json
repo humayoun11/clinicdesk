@@ -1,0 +1,399 @@
+{
+  "info": {
+    "name": "ClinicDesk API v1",
+    "description": "Set password locally; collection contains no credentials or tokens. Select doctor/service IDs from listings and a future starts_at from availability. Save/export without secrets.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "patient@clinicdesk.example",
+      "type": "string"
+    },
+    {
+      "key": "registration_email",
+      "value": "new-patient@clinicdesk.example",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctor_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "service_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "date",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "starts_at",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register a patient; privileged roles are prohibited",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{base_url}}/register",
+        "description": "Register a patient; privileged roles are prohibited",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Demo Patient\",\n  \"email\": \"{{registration_email}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Issue a Sanctum bearer token, default expiry 120 minutes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{base_url}}/login",
+        "description": "Issue a Sanctum bearer token, default expiry 120 minutes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) { pm.collectionVariables.set('token', pm.response.json().data.token); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Current authenticated user",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{base_url}}/user",
+        "description": "Current authenticated user"
+      }
+    },
+    {
+      "name": "Revoke only the current bearer token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{base_url}}/logout",
+        "description": "Revoke only the current bearer token"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 204) { pm.collectionVariables.set('token', ''); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List active doctors and their active services",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{base_url}}/doctors?per_page=12",
+        "description": "List active doctors and their active services"
+      }
+    },
+    {
+      "name": "List active services",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{base_url}}/services?per_page=12",
+        "description": "List active services"
+      }
+    },
+    {
+      "name": "Available 30-minute slots, advisory until booking",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{base_url}}/doctors/{{doctor_id}}/availability?date={{date}}",
+        "description": "Available 30-minute slots, advisory until booking"
+      }
+    },
+    {
+      "name": "Paginated appointments visible to the current role",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{base_url}}/appointments",
+        "description": "Paginated appointments visible to the current role"
+      }
+    },
+    {
+      "name": "Book for the current patient only",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{base_url}}/appointments",
+        "description": "Book for the current patient only",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"service_id\": \"{{service_id}}\",\n  \"starts_at\": \"{{starts_at}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) { pm.collectionVariables.set('appointment_id', String(pm.response.json().data.id)); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read an owned or assigned appointment",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{base_url}}/appointments/{{appointment_id}}",
+        "description": "Read an owned or assigned appointment"
+      }
+    },
+    {
+      "name": "Reschedule a future booked appointment; same doctor required",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{base_url}}/appointments/{{appointment_id}}/reschedule",
+        "description": "Reschedule a future booked appointment; same doctor required",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"service_id\": \"{{service_id}}\",\n  \"starts_at\": \"{{starts_at}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Cancel a future booked appointment; owner patient or admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{base_url}}/appointments/{{appointment_id}}/cancel",
+        "description": "Cancel a future booked appointment; owner patient or admin"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+@extends('layouts.app')
+@section('title',ucfirst(str_replace('-',' ',$form)))
+@section('content')
+<div class="auth-shell"><p class="eyebrow">Welcome to ClinicDesk</p><h1>{{ match($form){'register'=>'Make room for better care.','forgot-password'=>'Reset your password.',default=>'Good to see you again.'} }}</h1><p class="text-muted">{{ $form==='register'?'Create your patient account to book and manage appointments.':($form==='forgot-password'?'We’ll send a reset link if your email is registered.':'Sign in to your personal appointment dashboard.') }}</p><div class="card mt-4"><div class="card-body"><form method="post" action="{{ $form==='forgot-password'?route('password.email'):url('/'.$form) }}">@csrf
+@if($form==='register')<div class="mb-3"><label for="name" class="form-label">Full name</label><input id="name" name="name" class="form-control" value="{{ old('name') }}" maxlength="120" autocomplete="name" required></div>@endif
+<div class="mb-3"><label for="email" class="form-label">Email address</label><input id="email" type="email" name="email" class="form-control" value="{{ old('email') }}" autocomplete="email" maxlength="254" required></div>
+@if($form!=='forgot-password')<div class="mb-3"><label for="password" class="form-label">Password</label><input id="password" type="password" name="password" class="form-control" autocomplete="{{ $form==='register'?'new-password':'current-password' }}" required>@if($form==='register')<div class="form-text">At least 10 characters, with uppercase, lowercase and a number.</div>@endif</div>@endif
+@if($form==='register')<div class="mb-3"><label for="password_confirmation" class="form-label">Confirm password</label><input id="password_confirmation" type="password" name="password_confirmation" class="form-control" autocomplete="new-password" required></div>@endif
+<button class="btn btn-primary w-100">{{ match($form){'register'=>'Create patient account','forgot-password'=>'Send reset link',default=>'Sign in'} }}</button></form>
+@if($form==='login')<div class="d-flex justify-content-between mt-3"><a href="{{ route('password.request') }}">Forgot password?</a><a href="{{ route('register') }}">Create account</a></div>@else<a class="d-block mt-3" href="{{ route('login') }}">Back to sign in</a>@endif</div></div></div>
+@endsection

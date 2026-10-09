@@ -1,0 +1,1557 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ClinicDesk REST API",
+    "version": "1.0.0",
+    "description": "Single-clinic fictional demo. UTC storage; display timezone configurable. Sanctum opaque bearer tokens expire explicitly and are revoked by logout. Website and API share policies and BookingService. Patient manages own bookings; doctor reads assigned appointments; admin reads and manages bookings. Terminal statuses are final. Password reset and profile management are browser routes. Login: 5 requests/min per email+IP and 30/min per IP. Registration: 5/min/IP. API: 60/min/IP. Business conflicts use 422 with field errors."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8000/api/v1",
+      "description": "Local development; use HTTPS in production"
+    }
+  ],
+  "paths": {
+    "/register": {
+      "post": {
+        "summary": "Register a patient; privileged roles are prohibited",
+        "operationId": "post_register",
+        "tags": [
+          "Authentication & catalog"
+        ],
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registration"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Issue a Sanctum bearer token, default expiry 120 minutes",
+        "operationId": "post_login",
+        "tags": [
+          "Authentication & catalog"
+        ],
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "summary": "Current authenticated user",
+        "operationId": "get_user",
+        "tags": [
+          "Account & appointments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "summary": "Revoke only the current bearer token",
+        "operationId": "post_logout",
+        "tags": [
+          "Account & appointments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Current token revoked."
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors": {
+      "get": {
+        "summary": "List active doctors and their active services",
+        "operationId": "get_doctors",
+        "tags": [
+          "Authentication & catalog"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Doctor"
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services": {
+      "get": {
+        "summary": "List active services",
+        "operationId": "get_services",
+        "tags": [
+          "Authentication & catalog"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Service"
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/{doctor}/availability": {
+      "get": {
+        "summary": "Available 30-minute slots, advisory until booking",
+        "operationId": "get_doctors__doctor__availability",
+        "tags": [
+          "Authentication & catalog"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "doctor",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Clinic local date, from today through 90 days ahead."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Availability"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/appointments": {
+      "get": {
+        "summary": "Paginated appointments visible to the current role",
+        "operationId": "get_appointments",
+        "tags": [
+          "Account & appointments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "booked",
+                "cancelled",
+                "completed",
+                "no_show"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Appointment"
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Book for the current patient only",
+        "operationId": "post_appointments",
+        "tags": [
+          "Account & appointments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Appointment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Booking"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/appointments/{appointment}": {
+      "get": {
+        "summary": "Read an owned or assigned appointment",
+        "operationId": "get_appointments__appointment_",
+        "tags": [
+          "Account & appointments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "appointment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Appointment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/appointments/{appointment}/reschedule": {
+      "patch": {
+        "summary": "Reschedule a future booked appointment; same doctor required",
+        "operationId": "patch_appointments__appointment__reschedule",
+        "tags": [
+          "Account & appointments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "appointment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Appointment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Booking"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/appointments/{appointment}/cancel": {
+      "post": {
+        "summary": "Cancel a future booked appointment; owner patient or admin",
+        "operationId": "post_appointments__appointment__cancel",
+        "tags": [
+          "Account & appointments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "appointment",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Appointment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Validation errors have field-to-message arrays; other errors have an empty errors object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Sanctum opaque personal access token; not JWT."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "message",
+          "errors"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "patient",
+              "doctor",
+              "admin"
+            ]
+          }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "enum": [
+              30
+            ]
+          }
+        }
+      },
+      "Doctor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "specialty": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Service"
+            }
+          }
+        }
+      },
+      "Appointment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/User"
+          },
+          "doctor": {
+            "$ref": "#/components/schemas/Doctor"
+          },
+          "service": {
+            "$ref": "#/components/schemas/Service"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "booked",
+              "cancelled",
+              "completed",
+              "no_show"
+            ]
+          },
+          "display_timezone": {
+            "type": "string"
+          }
+        }
+      },
+      "Booking": {
+        "type": "object",
+        "required": [
+          "doctor_id",
+          "service_id",
+          "starts_at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "doctor_id": {
+            "type": "integer"
+          },
+          "service_id": {
+            "type": "integer"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Future 30-minute boundary. ISO 8601 with timezone recommended. Naive timestamps use CLINIC_TIMEZONE."
+          }
+        }
+      },
+      "Registration": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "password",
+          "password_confirmation"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 10,
+            "description": "Uppercase, lowercase and at least one number."
+          },
+          "password_confirmation": {
+            "type": "string",
+            "format": "password"
+          }
+        },
+        "description": "Always creates a patient. A submitted role is rejected."
+      },
+      "Login": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Opaque Sanctum token; returned only at issuance. Never a JWT."
+          },
+          "token_type": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "Availability": {
+        "type": "object",
+        "properties": {
+          "doctor_id": {
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    }
+  }
+}
